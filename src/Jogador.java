@@ -7,4 +7,6 @@ class Jogador {
   protected String nome;
   protected int qtPecas;
   protected String cor;
+  protected Boolean daVez;
+  protected Boolean vencedor;
 }
