@@ -1044,7 +1044,7 @@ public class InterfaceSesqui extends JFrame {
         	case 11: JOptionPane.showMessageDialog(this, "Posição ocupada"); break;
         	case 12: JOptionPane.showMessageDialog(this, "Posição ilegal"); break;
         	case 13: JOptionPane.showMessageDialog(this, "Partida corrente não interrompida"); break;
-        	case 14: JOptionPane.showMessageDialog(this, "Peça selecionada"); break;
+        	case 17: JOptionPane.showMessageDialog(this, "Jogada não permitida"); break;
 		};
 	}
 	

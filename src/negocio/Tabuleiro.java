@@ -8,10 +8,7 @@ public class Tabuleiro {
 	protected Jogador jogador2;
 	protected boolean partidaEmAndamento;
 	protected boolean conectado;
-	protected Vector<Lance> turno = new Vector<Lance>(); //cada turno completo possui 3 lances //(selecionar+mover); colocar
-	
-	
-	
+	protected Vector<Lance> turno = new Vector<Lance>(); //cada turno completo possui 3 lances //(selecionar+mover); colocar	
 	
 	public void resetarTurno(){
 		this.turno = new Vector<Lance>();
@@ -346,9 +343,14 @@ public class Tabuleiro {
 	public int validarMover(Jogador jogador,int linha, int coluna){
 		boolean ocupada = this.verificarOcupada(linha, coluna);
 		Posicao posicaoAtual = this.recuperarPosicao(linha, coluna);
+		Lance lanceAnterior = obterTipoJogadaSelecaoTurno();
+		if(lanceAnterior.informarLinha() == linha && lanceAnterior.informarColuna() == coluna){
+			deselecionar();
+			return 10;
+		}
 		if(ocupada && !jogador.equals(posicaoAtual.informarOcupante())){
 			return 11;
-		}else if (validarPosicaoMover(jogador, linha, coluna)){
+		}else if (!validarPosicaoMover(jogador, linha, coluna)){
 			return 12;
 		}else {
 			return 0;
@@ -364,6 +366,13 @@ public class Tabuleiro {
 	
 			if (tipoJogada == 2){				
 				if(vez){
+					if(!turno.isEmpty()){
+						Lance lanceAnterior = turno.get(turno.size() -1);
+						if(lanceAnterior.informarTipoJogada() == 4){
+							return 17;  //Jogada não permitida // mover 2x no mesmo turno
+						}					
+					}
+					
 					jogador.definirTipoJogada(tipoJogada);
 					Lance lance = informarJogada(linha, coluna, tipoJogada);
 					turno.add(lance);	
@@ -372,22 +381,13 @@ public class Tabuleiro {
 			}else
 			
 			if (tipoJogada == 4){
-				if(vez){
-					int resultado = validarMover(jogador, linha, coluna); //obter lance anterior tipo jogada	
-					//posicao ocupada outro jogador
-					//posicao ilegal
+				if(vez){					
+					int resultado = validarMover(jogador, linha, coluna); //obter lance anterior tipo jogada
 					if(resultado != 0){
 						return resultado;
 					}
-					
-					Lance lanceAnterior = obterTipoJogadaSelecaoTurno();
-					if(lanceAnterior.informarLinha() == linha && lanceAnterior.informarColuna() == coluna){
-						deselecionar();
-						return 10;
-					}					
 					mover(jogador, linha, coluna);
 				}
-
 				jogador.definirTipoJogada(tipoJogada);				
 				Lance lance = informarJogada(linha, coluna, tipoJogada);
 				turno.add(lance);
@@ -395,13 +395,18 @@ public class Tabuleiro {
 				if(completouTurno()){
 					mudarVezJogador(jogador);
 					resetarTurno();
-				}
-				
+				}				
 				//avaliarVencedor();
 				return 16;
 			}else
 			
-			if(tipoJogada == 3){
+			if(tipoJogada == 3){				
+				if(!turno.isEmpty()){
+					Lance lanceAnterior = turno.get(turno.size() -1);
+					if(lanceAnterior.informarTipoJogada() == 3){
+						return 17;  //Jogada não permitida // colocar 2x no mesmo turno
+					}					
+				}
 					lancePossivel = this.validarPosicaoColocar(jogador, linha, coluna);
 					if(lancePossivel){
 						colocarPeca(jogador, linha, coluna);
@@ -416,41 +421,15 @@ public class Tabuleiro {
 						return 10;								
 					} else {						
 						return 12; 
-					}
-				
-				
-/*				else{
-					lancePossivel = this.validarPosicaoColocar(jogador2, linha, coluna);
-					if(lancePossivel){
-						colocarPeca(jogador2, linha, coluna);		
-						if(completouTurno()){
-							mudarVezJogador(vez);
-						}
-					}
-				}*/
+					}			
+
 			} else {
 /*				for (int direcao=1; direcao<9; direcao++){
 					this.avaliarDirecao(jogador, linha, coluna, direcao);
 				}	*/
 				this.finalizarPartida();
 				return 9;
-			}
-			
-			
-/*		
-
-				if (lancePossivel){
-					return 10;
-				}else{
-					this.finalizarPartida();
-					return 9;
-				}	
-			}
-			
-			else{
-				return 12;
-			}*/
-				
+			}				
 	}
 	
 	public void colocarPeca(Jogador jogador, int linha, int coluna){
@@ -466,18 +445,65 @@ public class Tabuleiro {
 	
 	public boolean validarPosicaoMover(Jogador jogador, int linha, int coluna) {
 		boolean posicaoValida = false;
+		Lance lanceAnterior = obterTipoJogadaSelecaoTurno();
+		int linhaAnterior = lanceAnterior.informarLinha();
+		int colunaAnterior = lanceAnterior.informarColuna();
 		
-		for (int direcao=1; direcao<9; direcao++){
+		for (int direcao=1; direcao<9; direcao++){			
+			Lance lanceAux;			
+			int vLinha = linha;
+			int vColuna = coluna;			
+			boolean continuar = true;	
+			while (continuar){			
+				lanceAux = this.informarProximaPosicaoMover(vLinha, vColuna, direcao);
+				
+				vLinha = this.incrementarLinha(vLinha, direcao);
+				vColuna = this.incrementarColuna(vColuna, direcao);	
+				if(lanceAux!=null){					
+					if(lanceAux.informarLinha() == linhaAnterior && lanceAux.informarColuna() == colunaAnterior){
+						posicaoValida = true;
+						break;						
+					}
+				}else{	
+					continuar = false;					
+				}
+			}				
+		}		
+		return posicaoValida;
+	}
+	
+	public Lance informarProximaPosicaoMover(int linha, int coluna, int direcao){
+		int vLinha = linha;
+		int vColuna = coluna;
+		switch (direcao) {
+			case 1:   vLinha--; break; 					/*Norte*/
+			case 2:   {vLinha--; vColuna++;}; break; 	/*Nordeste*/
+			case 3:   vColuna++; break; 				/*Leste*/
+			case 4:   {vColuna++; vLinha++;}; break; 	/*Sudeste*/
+			case 5:   vLinha++; break; 					/*Sul*/
+			case 6:   {vColuna--; vLinha++;}; break; 	/*Sudoeste*/
+			case 7:   vColuna--; break; 				/*Oeste*/
+			case 8:   {vColuna--; vLinha--;}; break; 	/*Noroeste*/
+		};
+		if ((vLinha>0 && vLinha<9) && (vColuna>0 && vColuna<9)){
+			Lance retorno = this.informarJogada(vLinha, vColuna, 0);
+			return retorno;
+		}else{
+			return null;
+		}
+	}
+	
+	public boolean validarPosicaoColocar(Jogador jogador, int linha, int coluna) {
+		boolean posicaoValida = false;
+		
+		for (int direcao=1; direcao<5; direcao++){
 			
 			int vLinha = linha;
 			int vColuna = coluna;		
 			Posicao auxPosicao;
 			boolean continuar = true;	
 			while (continuar){			
-				auxPosicao = this.informarProximaPosicao(vLinha, vColuna, direcao);
-				vLinha = this.incrementarLinha(vLinha, direcao);
-				vColuna = this.incrementarColuna(vColuna, direcao);
-				
+				auxPosicao = this.informarProximaPosicaoColocarPeca(vLinha, vColuna, direcao);				
 				if (auxPosicao != null){
 					if (auxPosicao.informarOcupada()){					
 						if (auxPosicao.informarOcupante().equals(jogador)){
@@ -494,40 +520,6 @@ public class Tabuleiro {
 				};
 			};	
 		}		
-		return posicaoValida;
-	}
-	
-	public boolean validarPosicaoColocar(Jogador jogador, int linha, int coluna) {
-		boolean posicaoValida = false;
-		
-		for (int direcao=1; direcao<5; direcao++){
-			
-			int vLinha = linha;
-			int vColuna = coluna;		
-			Posicao auxPosicao;
-			boolean continuar = true;	
-			while (continuar){			
-				auxPosicao = this.informarProximaPosicaoColocarPeca(vLinha, vColuna, direcao);
-/*				vLinha = this.incrementarLinha(vLinha, direcao);
-				vColuna = this.incrementarColuna(vColuna, direcao);*/
-				
-				if (auxPosicao != null){
-					if (auxPosicao.informarOcupada()){					
-						if (auxPosicao.informarOcupante().equals(jogador)){
-							 posicaoValida = true;
-							 break;
-						}else{
-							continuar = false;						
-						};
-					}else{
-						continuar = false;
-					};
-				}else{
-					continuar = false;
-				};
-			};	
-		}
-		
 		return posicaoValida;
 	}
 
@@ -585,18 +577,19 @@ public class Tabuleiro {
 		}
 	}
 	
+
 	public Posicao informarProximaPosicao(int linha, int coluna, int direcao){
 		int vLinha = linha;
 		int vColuna = coluna;
 		switch (direcao) {
-			case 1:   vLinha--; break; 					/*Norte*/
-			case 2:   {vLinha--; vColuna++;}; break; 	/*Nordeste*/
-			case 3:   vColuna++; break; 				/*Leste*/
-			case 4:   {vColuna++; vLinha++;}; break; 	/*Sudeste*/
-			case 5:   vLinha++; break; 					/*Sul*/
-			case 6:   {vColuna--; vLinha++;}; break; 	/*Sudoeste*/
-			case 7:   vColuna--; break; 				/*Oeste*/
-			case 8:   {vColuna--; vLinha--;}; break; 	/*Noroeste*/
+		case 1:   vLinha--; break; 					/*Norte*/
+		case 2:   {vLinha--; vColuna++;}; break; 	/*Nordeste*/
+		case 3:   vColuna++; break; 				/*Leste*/
+		case 4:   {vColuna++; vLinha++;}; break; 	/*Sudeste*/
+		case 5:   vLinha++; break; 					/*Sul*/
+		case 6:   {vColuna--; vLinha++;}; break; 	/*Sudoeste*/
+		case 7:   vColuna--; break; 				/*Oeste*/
+		case 8:   {vColuna--; vLinha--;}; break; 	/*Noroeste*/
 		};
 		if ((vLinha>0 && vLinha<9) && (vColuna>0 && vColuna<9)){
 			Posicao posRetorno = this.recuperarPosicao(vLinha, vColuna);
@@ -635,40 +628,7 @@ public class Tabuleiro {
 		};
 		return vLinha;
 	}	
-
-/*	public void reverterPosicoesAfetadas(Jogador jogador, int linha, int coluna) {
-		Posicao posicao = this.recuperarPosicao(linha, coluna);
-		Posicao auxPosicao;
-		posicoesAfetadas.add(posicao);
-		for (int indice=0; indice<(posicoesAfetadas.size()); indice++){
-			auxPosicao = posicoesAfetadas.get(indice);
-			auxPosicao.alocar(jogador);
-		};
-	}
-
-	public void zerarPosicoesAfetadas() {
-		posicoesAfetadas = new Vector<Posicao>();
-	}
-
-	public boolean verificarPossibilidadeLance(Jogador jogador) {
-		Posicao auxPosicao;
-		for (int linha=1; linha<9; linha++){
-			for (int coluna=1; coluna<9; coluna++){
-				auxPosicao = this.recuperarPosicao(linha, coluna);
-				if (!(auxPosicao.informarOcupada())){
-					this.zerarPosicoesAfetadas();
-					for (int direcao=1; direcao<9; direcao++){
-						this.avaliarDirecao(jogador, linha, coluna, direcao);
-					}
-					if (posicoesAfetadas.size()>0){
-						return true;
-					}	
-				}
-			}
-		};
-		return false;
-	}*/
-
+	
 	public void finalizarPartida() {
 		int placar1 = this.informarPlacar(jogador1);
 		int placar2 = this.informarPlacar(jogador2);
