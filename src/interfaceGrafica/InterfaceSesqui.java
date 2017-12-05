@@ -989,6 +989,9 @@ public class InterfaceSesqui extends JFrame {
 		
 		if ((resultado == 10) || (resultado == 9) || (resultado == 14)|| (resultado == 15) || (resultado == 16)){
 			this.exibirEstado();
+			if(resultado == 9){
+				this.notificarResultado(resultado);
+			}
 		}else{
 			this.notificarResultado(resultado);
 		}
@@ -1043,7 +1046,7 @@ public class InterfaceSesqui extends JFrame {
         	case 10: JOptionPane.showMessageDialog(this, "Lance OK"); break;
         	case 11: JOptionPane.showMessageDialog(this, "Posição ocupada"); break;
         	case 12: JOptionPane.showMessageDialog(this, "Posição ilegal"); break;
-        	case 13: JOptionPane.showMessageDialog(this, "Partida corrente não interrompida"); break;
+        	case 13: JOptionPane.showMessageDialog(this, "Partida corrente não interrompida"); break;        	
         	case 17: JOptionPane.showMessageDialog(this, "Jogada não permitida"); break;
 		};
 	}
