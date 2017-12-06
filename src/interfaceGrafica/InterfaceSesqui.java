@@ -22,11 +22,11 @@ public class InterfaceSesqui extends JFrame {
     protected boolean emRede = false;
     protected String idJ1 = "";
     protected JLabel mapaVPosicao[][] = new JLabel[8][8];
-    
+
     private static final long serialVersionUID = 1L;
     private int linha;
     private int coluna;
-    
+
     private JPanel jContentPane = null;
     private JMenuBar jMenuBar1 = null;
     private JMenu menuJogo = null;
@@ -57,10 +57,11 @@ public class InterfaceSesqui extends JFrame {
     }
 
     private void initialize() {
-        this.setSize(620, 680);
+        this.setSize(600, 680);
         this.setContentPane(getJContentPane());
         this.setLocation(200, 100);
-        this.setTitle("Sesqui");
+        this.setTitle("UFSC - Sesqui");
+        this.setResizable(false);
         jogo = new AtorJogador(this);
     }
 
