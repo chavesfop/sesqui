@@ -46,12 +46,9 @@ public class Tabuleiro {
 			if (jogador.equals(jogador1)) {
 				jogador1.desabilitar();
 				jogador2.habilitar();
-				jogador1.qtPecas--;
-
 			} else {
 				jogador2.desabilitar();
 				jogador1.habilitar();
-				jogador2.qtPecas--;
 			}
 
 		} else {
@@ -67,19 +64,15 @@ public class Tabuleiro {
 				this.colocarPeca(jogador, linha, coluna);
 				if (jogador.equals(jogador1)) {
 					jogador1.desabilitar();
-					jogador2.habilitar();
-					jogador1.qtPecas--;
+					jogador2.habilitar();					
 				} else {
 					jogador2.desabilitar();
-					jogador1.habilitar();
-					jogador2.qtPecas--;
+					jogador1.habilitar();					
 				}
 				jogador1.definirTipoJogada(0);
 				jogador2.definirTipoJogada(0);
-
 			} else {
-				this.colocarPeca(jogador, linha, coluna);
-				jogador.qtPecas--;
+				this.colocarPeca(jogador, linha, coluna);				
 			}
 		}
 		return 15;
@@ -114,7 +107,7 @@ public class Tabuleiro {
 
 	public int click(int linha, int coluna) {
 		int resultado;
-		if (!partidaEmAndamento) {
+		if (!this.informarEmAndamento()) {
 			resultado = 9;
 			return resultado;
 		}
@@ -145,22 +138,31 @@ public class Tabuleiro {
 		boolean vencedor;
 		String nomeVencedor = "";
 		int valor = 0;
-		int placarBranco = 0;
-		int placarPreto = 0;
+		String placarBranco = "" ;
+		String placarPreto = "" ;
 		// COMPOSICAO DA MENSAGEM
 		if (partidaEmAndamento) {
 			boolean vez = jogador1.informarDaVez();
 			if (vez) {
 				if (jogador1.informarSimbolo()) {
-					mensagem = ("Vez do jogador " + jogador1.informarNome() + " (peões brancos)");
+					mensagem = ("Vez do jogador " + jogador1.informarNome() + " (peças brancas)");
+					placarBranco = jogador1.informarQtPecas()+"";
+					placarPreto = jogador2.informarQtPecas()+"";
+					
 				} else {
-					mensagem = ("Vez do jogador " + jogador1.informarNome() + " (peões pretos)");
+					mensagem = ("Vez do jogador " + jogador1.informarNome() + " (peças pretas)");
+					placarPreto = jogador1.informarQtPecas()+"";
+					placarBranco = jogador2.informarQtPecas()+"";
 				}
 			} else {
 				if (jogador2.informarSimbolo()) {
-					mensagem = ("Vez do jogador " + jogador2.informarNome() + " (peões brancos)");
+					mensagem = ("Vez do jogador " + jogador2.informarNome() + " (peças brancas)");
+					placarBranco = jogador2.informarQtPecas()+"";
+					placarPreto = jogador1.informarQtPecas()+"";
 				} else {
-					mensagem = ("Vez do jogador " + jogador2.informarNome() + " (peões pretos)");
+					mensagem = ("Vez do jogador " + jogador2.informarNome() + " (peças pretas)");
+					placarPreto = jogador2.informarQtPecas()+"";
+					placarBranco = jogador1.informarQtPecas()+"";
 				}
 			}
 		} else {
@@ -174,9 +176,16 @@ public class Tabuleiro {
 				}
 			}
 			if (vencedor) {
-				mensagem = ("VENCEDOR: " + nomeVencedor);
+				mensagem = ("VENCEDOR:  " + nomeVencedor);
 			} else {
 				mensagem = ("Partida encerrada com empate");
+			}
+			if (jogador1.informarSimbolo()) {				
+				placarBranco = jogador1.informarQtPecas()+"";
+				placarPreto = jogador2.informarQtPecas()+"";				
+			} else {				
+				placarPreto = jogador1.informarQtPecas()+"";
+				placarBranco = jogador2.informarQtPecas()+"";
 			}
 		}
 		estado.assumirMensagem(mensagem);
@@ -196,7 +205,7 @@ public class Tabuleiro {
 						} else {
 							valor = 1;
 						}
-						placarBranco++;
+						
 					} else {
 						Lance lance = obterTipoJogadaSelecaoTurno();
 						if (lance != null && lance.informarLinha() == linha
@@ -205,7 +214,7 @@ public class Tabuleiro {
 						} else {
 							valor = 2;
 						}
-						placarPreto++;
+						
 					}
 
 				} else {
@@ -213,8 +222,8 @@ public class Tabuleiro {
 				}
 				estado.assumirValor(linha, coluna, valor);
 
-				String textoPlacar = ("(branco):  " + (new Integer(placarBranco)).toString() + "   /   " + "(preto):  "
-						+ (new Integer(placarPreto)).toString());
+				String textoPlacar = ("(branco):  " + placarBranco + "   /   " + "(preto):  "
+						+ placarPreto );  
 
 				estado.assumirPlacar("Nº Peças:   " + textoPlacar);
 			}
@@ -304,6 +313,8 @@ public class Tabuleiro {
 				return 4;
 			} else if (ocupada && jogador.equals(posicaoAtual.informarOcupante())) {
 				return 2;
+		
+			
 			} else {
 				return 3;
 			}
@@ -360,8 +371,7 @@ public class Tabuleiro {
 
 	}
 
-	public int tratarLance(Jogador jogador, int linha, int coluna) {
-		boolean lancePossivel = false;
+	public int tratarLance(Jogador jogador, int linha, int coluna) {		
 		boolean vez = jogador.informarDaVez();
 		int tipoJogada = definirTipoJogada(jogador, linha, coluna);
 
@@ -406,16 +416,9 @@ public class Tabuleiro {
 			return 16;
 			
 		} else if (tipoJogada == 3) {
-			if (!turno.isEmpty()) {
-				Lance lanceAnterior = turno.get(turno.size() - 1);
-				if (lanceAnterior.informarTipoJogada() == 3) {
-					return 17; // Jogada não permitida // colocar 2x no mesmo
-								// turno
-				}
-			}
-			lancePossivel = this.validarPosicaoColocar(jogador, linha, coluna);
-			if (lancePossivel) {
-				
+			int resultado = this.validarColocar(jogador, linha, coluna);
+
+			if (resultado == 0) {
 				colocarPeca(jogador, linha, coluna);
 				jogador.definirTipoJogada(tipoJogada);
 				Lance lance = informarJogada(linha, coluna, tipoJogada);
@@ -431,7 +434,7 @@ public class Tabuleiro {
 				return 10;
 				
 			} else {
-				return 12;
+				return  resultado;
 			}
 			
 		} else {
@@ -442,18 +445,39 @@ public class Tabuleiro {
 			}
 		}
 	}
+	
+	public int validarColocar(Jogador jogador, int linha, int coluna) {
+		boolean ocupada = this.verificarOcupada(linha, coluna);
+		Posicao posicaoAtual = this.recuperarPosicao(linha, coluna);
+		int resultado = 0;
+		if (ocupada && !jogador.equals(posicaoAtual.informarOcupante())) {
+			return 11;
+		}
+		if (!turno.isEmpty()) {
+			Lance lanceAnterior = turno.get(turno.size() - 1);
+			if (lanceAnterior.informarTipoJogada() == 3) {
+				return 17; // Jogada não permitida // colocar 2x no mesmo
+							// turno
+			}
+		}
+		boolean lancePossivel = this.validarPosicaoColocar(jogador, linha, coluna);
+		if (!lancePossivel) {
+			return 12;
+		}
+		return resultado;
+	}
 
 	public boolean avaliarTerminoPartida(Jogador jogador) {
 		if (avaliarVencedor(jogador)) {
 			return true;
 		}
-		if (jogador.informarQtPecas() == 30) {
+		if (jogador.informarQtPecas() == 0) {
 			partidaEmAndamento = false;
 			return true;
 		}
 		return false;
 	}
-
+	
 	public boolean avaliarVencedor(Jogador jogador) {
 		Posicao auxPosicao;
 		if (jogador.informarSimbolo()) { // true é branco
@@ -711,19 +735,4 @@ public class Tabuleiro {
 		jogador2.desabilitar();
 	}
 
-	public int informarPlacar(Jogador jogador) {
-		Posicao auxPosicao;
-		int contador = 0;
-		for (int linha = 1; linha < 9; linha++) {
-			for (int coluna = 1; coluna < 9; coluna++) {
-				auxPosicao = this.recuperarPosicao(linha, coluna);
-				if ((auxPosicao.informarOcupada())) {
-					if (auxPosicao.informarOcupante() == jogador) {
-						contador++;
-					}
-				}
-			}
-		}
-		return contador;
-	}
 }
