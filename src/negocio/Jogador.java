@@ -10,8 +10,7 @@ public class Jogador {
 	protected int tipoJogada;  // 1 = primeiroTurno; 2 = selecionou; 3 = colocou; 4 = movimentou
 	protected boolean completouTurno;	
 	
-	protected boolean colocou;
-	protected boolean movimentou;
+
 	
 	
 	public int informarQtPecas(){
@@ -45,8 +44,6 @@ public class Jogador {
 	public void iniciar() {
 		daVez = false;
 		vencedor = false;
-		movimentou = false;
-		colocou = false;
 		qtPecas = 30;
 		tipoJogada = 1;
 	}
